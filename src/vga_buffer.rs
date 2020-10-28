@@ -1,6 +1,8 @@
 
 use volatile::Volatile;
 use core::fmt;
+use lazy_static::lazy_static;
+use spin::Mutex;
 
 #[allow(dead_code)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -49,7 +51,7 @@ struct Buffer {
     chars: [[Volatile<ScreenChar>; BUFFER_WIDTH]; BUFFER_HEIGHT],
 }
 
-struct Writer {
+pub struct Writer {
     column_position: usize,
     color_code: ColorCode,
     buffer: &'static mut Buffer,
@@ -119,21 +121,10 @@ impl fmt::Write for Writer {
     }
 }
 
-pub fn print_something() {
-    use core::fmt::Write;
-    let mut writer = Writer {
+lazy_static! {
+    pub static ref WRITER: Mutex<Writer> = Mutex::new(Writer {
         column_position: 0,
         color_code: ColorCode::new(Color::Yellow, Color::Black),
-
-        buffer: unsafe { &mut *(0xb8000 as *mut Buffer) }
-    };
-
-    writer.write_byte(b'H');
-    writer.write_string("ello ");
-    writer.write_string("Wörld!\n");
-    writeln!(writer, "these are the nmbers {} {}", 420, 69);
-    // write!(writer, "The numbers are {} and {}", 42, 1.0/3.0).unwrap();
-    // writeln!(writer, "Hello???").unwrap();
-    // writeln!(writer, "this is not a good thing it all seems to drop off at a certain point...").unwrap();
-
+        buffer: unsafe { &mut *(0xb8000 as *mut Buffer) },
+    });
 }
