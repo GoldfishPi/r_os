@@ -83,12 +83,33 @@ impl Writer {
         for byte in s.bytes() {
             match byte {
                 0x20..=0x7e | b'\n' => self.write_byte(byte),
-                _ => self.write_byte(0xfe)
+                _ => self.write_byte(0xfe),
             }
         }
     }
 
-    fn new_line(&mut self) { /* TODO */ }
+    fn new_line(&mut self) {
+        for row in 1..BUFFER_HEIGHT {
+            for col in 0..BUFFER_WIDTH {
+                let character = self.buffer.chars[row][col].read();
+                self.buffer.chars[row - 1][col].write(character);
+            }
+        }
+
+        self.clear_row(BUFFER_HEIGHT - 1);
+        self.column_position = 0;
+    }
+
+    fn clear_row(&mut self, row:usize) {
+        let blank = ScreenChar {
+            ascii_character: b' ',
+            color_code: self.color_code,
+        };
+
+        for col in 0..BUFFER_WIDTH {
+            self.buffer.chars[row][col].write(blank);
+        }
+    }
 }
 
 impl fmt::Write for Writer {
@@ -107,7 +128,12 @@ pub fn print_something() {
         buffer: unsafe { &mut *(0xb8000 as *mut Buffer) }
     };
 
-    writer.write_string("Hello this is a newly written string ~``");
-    write!(writer, "The numbers are {} and {}", 42, 1.0/3.0).unwrap();
+    writer.write_byte(b'H');
+    writer.write_string("ello ");
+    writer.write_string("Wörld!\n");
+    writeln!(writer, "these are the nmbers {} {}", 420, 69);
+    // write!(writer, "The numbers are {} and {}", 42, 1.0/3.0).unwrap();
+    // writeln!(writer, "Hello???").unwrap();
+    // writeln!(writer, "this is not a good thing it all seems to drop off at a certain point...").unwrap();
 
 }
