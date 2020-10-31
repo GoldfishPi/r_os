@@ -152,9 +152,9 @@ fn test_print_simple() {
 }
 
 #[test_case]
-fn test_printlnt_many() {
+fn test_println_many() {
     for _ in 0..200 {
-        println!("test_printlnt_many output");
+        println!("test_println_many output");
     }
 }
 
