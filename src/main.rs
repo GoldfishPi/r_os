@@ -14,10 +14,11 @@ pub extern "C" fn _start() -> ! {
 
     r_os::init();
 
-    // Invoke breakpoint exception
-    x86_64::instructions::interrupts::int3();
+    fn stack_overflow() {
+        stack_overflow();
+    }
 
-    println!("it did not crash!");
+    stack_overflow();
 
     #[cfg(test)]
     test_main();
